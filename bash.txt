@@ -1,0 +1,11 @@
+CURRENTDATE=`date +"%A, %d %b, %Y"`
+UPTIME=`uptime -p`
+IP=`hostname -I`
+cat /usr/share/.name
+echo
+echo "Hey ""$USER"  
+echo
+echo "It's ""$CURRENTDATE"", ""$UPTIME" 
+echo 
+echo "$IP"
+echo
