@@ -66,5 +66,10 @@ source welcome.sh; source welcome.sh
 mybashrc/
   welcome.sh   — welcome/MOTD script
   README.md    — this file
-  LICENSE      — license
+  LICENSE      — MIT License
 ```
+
+## License
+
+MIT License — free to use, modify, and distribute with attribution.
+See [LICENSE](LICENSE) for full terms. Copyright © 2026 Bill Kav.
