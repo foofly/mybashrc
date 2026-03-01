@@ -6,7 +6,7 @@ a greeting, date, uptime, IP, load, memory, disk usage, and last login.
 ## Install
 
 ```bash
-git clone https://github.com/yourusername/mybashrc.git ~/git/mybashrc
+git clone https://github.com/foofly/mybashrc.git ~/git/mybashrc
 ```
 
 Add to `~/.bashrc` (before the final line):
