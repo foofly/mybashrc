@@ -5,15 +5,22 @@ a greeting, date, uptime, IP, load, memory, disk usage, and last login.
 
 ## Install
 
-```bash
-git clone https://github.com/foofly/mybashrc.git ~/git/mybashrc
-```
+Clone the repo, then run the installer:
 
-Add to `~/.bashrc` (before the final line):
+    git clone https://github.com/foofly/mybashrc.git ~/git/mybashrc
+    bash ~/git/mybashrc/install.sh
 
-```bash
-[[ -f ~/git/mybashrc/welcome.sh ]] && source ~/git/mybashrc/welcome.sh
-```
+Open a new terminal — the welcome screen will appear automatically.
+
+### Manual install
+
+If you prefer to add the line yourself, append to `~/.bashrc`:
+
+    [[ -f ~/git/mybashrc/welcome.sh ]] && source ~/git/mybashrc/welcome.sh
+
+### Uninstall
+
+Remove the source line from `~/.bashrc`, then open a new terminal.
 
 ## Configuration
 
