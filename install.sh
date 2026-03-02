@@ -12,14 +12,18 @@ if [[ ! -f "$WELCOME" ]]; then
     exit 1
 fi
 
-# Detect rc file
-if [[ -f "$HOME/.bashrc" ]]; then
-    RC_FILE="$HOME/.bashrc"
-elif [[ -f "$HOME/.zshrc" ]]; then
-    RC_FILE="$HOME/.zshrc"
+# Detect rc file (macOS defaults to zsh; Linux defaults to bash)
+_OS=$(uname -s)
+if [[ "$_OS" == "Darwin" ]]; then
+    if   [[ -f "$HOME/.zshrc"  ]]; then RC_FILE="$HOME/.zshrc"
+    elif [[ -f "$HOME/.bashrc" ]]; then RC_FILE="$HOME/.bashrc"
+    else echo "Error: no ~/.zshrc or ~/.bashrc found." >&2; exit 1
+    fi
 else
-    echo "Error: no ~/.bashrc or ~/.zshrc found." >&2
-    exit 1
+    if   [[ -f "$HOME/.bashrc" ]]; then RC_FILE="$HOME/.bashrc"
+    elif [[ -f "$HOME/.zshrc"  ]]; then RC_FILE="$HOME/.zshrc"
+    else echo "Error: no ~/.bashrc or ~/.zshrc found." >&2; exit 1
+    fi
 fi
 
 # Idempotency check

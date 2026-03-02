@@ -18,9 +18,11 @@ _WELCOME_LOADED=1
 _welcome_show() {
     local CURRENTDATE UPTIME IP LOAD LOAD1 LOAD_COLOR NCPU GREETING LAST_LOGIN
     local RESET BOLD FG_CYAN FG_BLUE FG_YELLOW FG_GREEN FG_RED
-    local TERM_WIDTH hour ACTIVE_IFACE
+    local TERM_WIDTH hour ACTIVE_IFACE OS
     local MEM MEM_TOTAL MEM_AVAIL MEM_USED MEM_PCT BAR BAR_FILLED BAR_EMPTY i
-    local DISK_ROOT DISK_HOME USERS_COUNT SSH_IP UPDATES
+    local DISK_ROOT DISK_HOME USERS_COUNT SSH_IP UPDATES _users_dev _root_dev
+
+    OS=$(uname -s)   # "Linux" or "Darwin"
 
     # ─── Colors (degrade gracefully) ──────────────────────────────────────────
     if [[ "${WELCOME_COLOR}" == "1" ]] && [[ -t 1 ]] \
@@ -54,17 +56,31 @@ _welcome_show() {
     # ─── Gather data ──────────────────────────────────────────────────────────
     CURRENTDATE=$(date +"%A, %d %b %Y")
 
-    UPTIME=$(uptime -p 2>/dev/null | sed 's/^up //' || echo "unknown")
+    if [[ "$OS" == "Darwin" ]]; then
+        UPTIME=$(uptime | sed 's/.*up[[:space:]]*//' | sed 's/,[[:space:]]*[0-9]* user.*//' | xargs)
+    else
+        UPTIME=$(uptime -p 2>/dev/null | sed 's/^up //' || echo "unknown")
+    fi
 
-    # Primary IP via ip route — deterministic on multi-homed/VPN machines
-    ACTIVE_IFACE=$(ip route 2>/dev/null | awk '/^default/ {print $5; exit}')
-    IP=$(ip -4 addr show "${ACTIVE_IFACE}" 2>/dev/null \
-        | awk '/inet / {print $2}' | cut -d/ -f1)
+    # Primary IP — deterministic on multi-homed/VPN machines
+    if [[ "$OS" == "Darwin" ]]; then
+        ACTIVE_IFACE=$(route -n get default 2>/dev/null | awk '/interface:/ {print $2}')
+        IP=$(ipconfig getifaddr "${ACTIVE_IFACE}" 2>/dev/null)
+    else
+        ACTIVE_IFACE=$(ip route 2>/dev/null | awk '/^default/ {print $5; exit}')
+        IP=$(ip -4 addr show "${ACTIVE_IFACE}" 2>/dev/null \
+            | awk '/inet / {print $2}' | cut -d/ -f1)
+    fi
     IP=${IP:-"no IP"}
 
     # Load average with color coding (red ≥ 100% cores, yellow ≥ 70%, green otherwise)
-    NCPU=$(nproc 2>/dev/null || echo 1)
-    LOAD1=$(awk '{print $1}' /proc/loadavg 2>/dev/null || echo 0)
+    if [[ "$OS" == "Darwin" ]]; then
+        NCPU=$(sysctl -n hw.ncpu 2>/dev/null || echo 1)
+        LOAD1=$(sysctl -n vm.loadavg 2>/dev/null | awk '{print $2}')
+    else
+        NCPU=$(nproc 2>/dev/null || echo 1)
+        LOAD1=$(awk '{print $1}' /proc/loadavg 2>/dev/null || echo 0)
+    fi
     LOAD1=${LOAD1:-0}
     LOAD_COLOR=$(awk -v l="${LOAD1}" -v n="${NCPU}" \
         -v red="${FG_RED}" -v yel="${FG_YELLOW}" -v grn="${FG_GREEN}" \
@@ -74,12 +90,21 @@ _welcome_show() {
             else if (ratio >= 0.7) print yel
             else                   print grn
         }')
-    LOAD=$(uptime 2>/dev/null | awk -F'load average: ' '{print $2}' || echo "unknown")
+    LOAD=$(uptime 2>/dev/null | awk -F'load averages?: ' '{print $2}' || echo "unknown")
 
-    # Memory bar from /proc/meminfo (uses MemAvailable for accuracy)
+    # Memory bar (uses MemAvailable on Linux, vm_stat on macOS)
     if [[ -r /proc/meminfo ]]; then
         MEM_TOTAL=$(awk '/^MemTotal:/     {print $2}' /proc/meminfo)
         MEM_AVAIL=$(awk '/^MemAvailable:/ {print $2}' /proc/meminfo)
+    elif [[ "$OS" == "Darwin" ]]; then
+        MEM_TOTAL=$(( $(sysctl -n hw.memsize 2>/dev/null) / 1024 ))
+        MEM_AVAIL=$(vm_stat 2>/dev/null | awk '
+            /page size of/ { match($0,/[0-9]+/); ps=substr($0,RSTART,RLENGTH) }
+            /Pages free:/      { gsub(/\./,"",$3); f=$3 }
+            /Pages inactive:/  { gsub(/\./,"",$3); i=$3 }
+            END { print int((f+i)*ps/1024) }')
+    fi
+    if [[ -n "$MEM_TOTAL" && "$MEM_TOTAL" -gt 0 ]]; then
         MEM_USED=$(( MEM_TOTAL - MEM_AVAIL ))
         MEM_PCT=$(( MEM_USED * 100 / MEM_TOTAL ))
         BAR_FILLED=$(( MEM_PCT / 10 ))
@@ -130,8 +155,14 @@ _welcome_show() {
     if [[ "${WELCOME_SHOW_DISK}" == "1" ]]; then
         DISK_ROOT=$(df -h / 2>/dev/null | awk 'NR==2 {print $3 "/" $2 " (" $5 ")"}')
         [[ -n "${DISK_ROOT}" ]] && _row "Disk (/)" "${DISK_ROOT}"
-        # Only show /home if it's a separate mountpoint
-        if mountpoint -q /home 2>/dev/null; then
+        if [[ "$OS" == "Darwin" ]]; then
+            _users_dev=$(df /Users 2>/dev/null | awk 'NR==2{print $1}')
+            _root_dev=$(df /      2>/dev/null | awk 'NR==2{print $1}')
+            if [[ -n "$_users_dev" && "$_users_dev" != "$_root_dev" ]]; then
+                DISK_HOME=$(df -h /Users 2>/dev/null | awk 'NR==2 {print $3 "/" $2 " (" $5 ")"}')
+                [[ -n "${DISK_HOME}" ]] && _row "Disk (/Users)" "${DISK_HOME}"
+            fi
+        elif mountpoint -q /home 2>/dev/null; then
             DISK_HOME=$(df -h /home 2>/dev/null | awk 'NR==2 {print $3 "/" $2 " (" $5 ")"}')
             [[ -n "${DISK_HOME}" ]] && _row "Disk (/home)" "${DISK_HOME}"
         fi
@@ -161,6 +192,9 @@ _welcome_show() {
         elif command -v apt-get &>/dev/null; then
             UPDATES=$(apt-get -s upgrade 2>/dev/null | grep -c '^Inst' || echo 0)
             _row "Updates" "${UPDATES} available"
+        elif command -v brew &>/dev/null; then
+            UPDATES=$(brew outdated 2>/dev/null | wc -l | tr -d ' ')
+            _row "Updates" "${UPDATES} available (brew)"
         fi
     fi
 

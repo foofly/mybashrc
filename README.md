@@ -2,6 +2,7 @@
 
 A system welcome/MOTD script sourced from `~/.bashrc` on login. Displays
 a greeting, date, uptime, IP, load, memory, disk usage, and last login.
+Supports Linux and macOS (bash or zsh).
 
 ## Install
 
@@ -11,6 +12,7 @@ Clone the repo, then run the installer:
     bash ~/git/mybashrc/install.sh
 
 Open a new terminal — the welcome screen will appear automatically.
+On macOS, `~/.zshrc` is preferred automatically.
 
 ### Manual install
 
@@ -51,7 +53,7 @@ Set any of these variables in `~/.bashrc` **before** the source line:
 | `WELCOME_SHOW_DISK`     | `1`     | Show disk usage for `/` (and `/home`)    |
 | `WELCOME_SHOW_LASTLOGIN`| `1`     | Show last login timestamp                |
 | `WELCOME_SHOW_USERS`    | `1`     | Show number of logged-in users           |
-| `WELCOME_SHOW_UPDATES`  | `0`     | Show pending package updates (slow)      |
+| `WELCOME_SHOW_UPDATES`  | `0`     | Show pending package updates — dnf, apt, or brew (slow) |
 | `WELCOME_COMPACT`       | `0`     | Single-line output for frequent SSH      |
 | `WELCOME_FORTUNE`       | `0`     | Print a fortune after the output         |
 | `WELCOME_COLOR`         | `1`     | Enable color output via tput             |
@@ -85,6 +87,9 @@ WELCOME_COMPACT=1 bash --rcfile welcome.sh
 
 # Double-source idempotency (output appears only once)
 source welcome.sh; source welcome.sh
+
+# macOS test (no install needed)
+bash /path/to/mybashrc/welcome.sh
 ```
 
 ## Files
