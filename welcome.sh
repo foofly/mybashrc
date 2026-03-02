@@ -93,7 +93,7 @@ _welcome_show() {
     fi
 
     # Time-of-day greeting
-    hour=$(date +%H)
+    hour=$(date +%-H)
     if   (( hour < 12 )); then GREETING="Good morning"
     elif (( hour < 17 )); then GREETING="Good afternoon"
     elif (( hour < 21 )); then GREETING="Good evening"

@@ -22,6 +22,26 @@ If you prefer to add the line yourself, append to `~/.bashrc`:
 
 Remove the source line from `~/.bashrc`, then open a new terminal.
 
+## ASCII Art / Custom Logo
+
+Place your ASCII art in `/usr/share/.name` and it will be displayed above the
+welcome output on every login:
+
+    sudo nano /usr/share/.name
+
+Example:
+
+```
+  __  __       _   _
+ |  \/  |_   _| | | | ___  ___
+ | |\/| | | | | |_| |/ _ \/ __|
+ | |  | | |_| |  _  | (_) \__ \
+ |_|  |_|\__, |_| |_|\___/|___/
+          |___/
+```
+
+The file is optional — if it doesn't exist, the welcome screen appears as normal.
+
 ## Configuration
 
 Set any of these variables in `~/.bashrc` **before** the source line:
@@ -71,9 +91,12 @@ source welcome.sh; source welcome.sh
 
 ```
 mybashrc/
-  welcome.sh   — welcome/MOTD script
-  README.md    — this file
-  LICENSE      — MIT License
+  welcome.sh        — welcome/MOTD script
+  install.sh        — idempotent installer
+  README.md         — this file
+  LICENSE           — MIT License
+
+/usr/share/.name    — optional ASCII art logo (not in repo)
 ```
 
 ## License
