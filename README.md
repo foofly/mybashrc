@@ -16,13 +16,22 @@ On macOS, `~/.zshrc` is preferred automatically.
 
 ### Manual install
 
-If you prefer to add the line yourself, append to `~/.bashrc`:
+**Linux** — append to `~/.bashrc`:
 
     [[ -f ~/git/mybashrc/welcome.sh ]] && source ~/git/mybashrc/welcome.sh
 
+**macOS** — append to `~/.zshrc`:
+
+    [[ -f ~/git/mybashrc/welcome.sh ]] && source ~/git/mybashrc/welcome.sh
+
+Then reload your shell:
+
+    source ~/.zshrc   # macOS
+    source ~/.bashrc  # Linux
+
 ### Uninstall
 
-Remove the source line from `~/.bashrc`, then open a new terminal.
+Remove the source line from `~/.zshrc` (macOS) or `~/.bashrc` (Linux), then open a new terminal.
 
 ## ASCII Art / Custom Logo
 
