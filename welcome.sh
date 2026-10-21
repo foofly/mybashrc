@@ -14,15 +14,24 @@ _WELCOME_LOADED=1
 : "${WELCOME_COMPACT:=0}"        # single-line mode for frequent SSH
 : "${WELCOME_FORTUNE:=0}"        # fortune -s if installed
 : "${WELCOME_COLOR:=1}"
+: "${WELCOME_SHOW_OS:=1}"         # OS and kernel rows (full view only)
 
 _welcome_show() {
     local CURRENTDATE UPTIME IP LOAD LOAD1 LOAD_COLOR NCPU GREETING LAST_LOGIN
     local RESET BOLD FG_CYAN FG_BLUE FG_YELLOW FG_GREEN FG_RED
-    local TERM_WIDTH hour ACTIVE_IFACE OS
+    local TERM_WIDTH hour ACTIVE_IFACE OS OS_PRETTY KERNEL
     local MEM MEM_TOTAL MEM_AVAIL MEM_USED MEM_PCT BAR BAR_FILLED BAR_EMPTY i
     local DISK_ROOT DISK_HOME USERS_COUNT SSH_IP UPDATES _users_dev _root_dev
 
     OS=$(uname -s)   # "Linux" or "Darwin"
+
+    # Distro/OS name and kernel release (os-release on Linux, sw_vers on macOS)
+    if [[ "$OS" == "Darwin" ]]; then
+        OS_PRETTY="macOS $(sw_vers -productVersion 2>/dev/null)"
+    else
+        OS_PRETTY=$(. /etc/os-release 2>/dev/null; echo "${PRETTY_NAME:-${NAME:-Linux}}")
+    fi
+    KERNEL=$(uname -r)
 
     # ─── Colors (degrade gracefully) ──────────────────────────────────────────
     if [[ "${WELCOME_COLOR}" == "1" ]] && [[ -t 1 ]] \
@@ -148,6 +157,10 @@ _welcome_show() {
     echo
 
     _row "Uptime"  "${UPTIME}"
+    if [[ "${WELCOME_SHOW_OS}" == "1" ]]; then
+        _row "OS"     "${OS_PRETTY}"
+        _row "Kernel" "${KERNEL}"
+    fi
     _row "IP"      "${IP}"
     _row "Load"    "${LOAD}"  "${LOAD_COLOR}"
     _row "Memory"  "${MEM}"

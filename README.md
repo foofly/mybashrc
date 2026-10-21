@@ -130,6 +130,7 @@ Set any of these variables in `~/.bashrc` **before** the source line:
 | `WELCOME_COMPACT`       | `0`     | Single-line output for frequent SSH      |
 | `WELCOME_FORTUNE`       | `0`     | Print a fortune after the output         |
 | `WELCOME_COLOR`         | `1`     | Enable color output via tput             |
+| `WELCOME_SHOW_OS`       | `1`     | Show OS and kernel version rows (full view; not compact) |
 | `WELCOME_SHOW_ISSUES`   | `1`     | Show the Recent Issues section (`welcome-server.sh` only) |
 | `WELCOME_ISSUES_DISK_WARN` | `90` | Flag disk `/` usage red at this percent or above |
 | `WELCOME_ISSUES_MEM_WARN`  | `90` | Flag memory red at this percent or above |
